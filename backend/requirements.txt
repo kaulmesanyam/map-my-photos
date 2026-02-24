@@ -1,0 +1,9 @@
+fastapi 
+uvicorn 
+sqlalchemy 
+psycopg2-binary 
+pgvector 
+pydantic-settings 
+httpx 
+python-dotenv 
+python-multipart

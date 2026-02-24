@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  db:
+    # This image comes pre-installed with the pgvector extension
+    image: ankane/pgvector:latest
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: photos_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
