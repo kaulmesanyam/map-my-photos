@@ -5,6 +5,8 @@ import httpx
 from sqlalchemy.orm import Session
 from database import get_db
 import models
+import security
+from security import create_access_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -76,14 +78,20 @@ async def google_callback(code: str, db: Session = Depends(get_db)):
             db.commit()
             db.refresh(user)
             
-        # For the MVP, we can just return the tokens or set a cookie.
-        # In a real app, you'd generate a JWT session token here and store the refresh token
-        # to fetch photos later. 
+        # 4. Generate local JWT for the session
+        access_token_jwt = create_access_token(data={"sub": str(user.id)})
+            
         return {
-            "message": "Login successful", 
-            "user": {"email": email, "name": name},
-            "credentials_for_photos_api": {
+            "access_token": access_token_jwt, 
+            "token_type": "bearer",
+            "user": {"id": user.id, "email": email, "name": name},
+            "google_tokens": {
                 "access_token": access_token,
                 "refresh_token": tokens.get("refresh_token")
             }
         }
+
+@router.get("/me")
+def read_users_me(current_user: models.User = Depends(security.get_current_user)):
+    """Fetch the currently logged in user based on the JWT token provided."""
+    return {"id": current_user.id, "email": current_user.email, "name": current_user.name}

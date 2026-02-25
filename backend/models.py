@@ -11,6 +11,7 @@ class User(Base):
     google_id = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
     name = Column(String)
+    google_refresh_token = Column(String, nullable=True)
     
     # One-to-many relationship: A user can have many photos
     photos = relationship("Photo", back_populates="owner")
