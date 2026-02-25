@@ -15,7 +15,7 @@ GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
 GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/auth/callback")
 
 # Scopes needed for basic profile and reading Google Photos
-SCOPES = "openid email profile https://www.googleapis.com/auth/photoslibrary.readonly"
+SCOPES = "openid%20email%20profile%20https://www.googleapis.com/auth/photoslibrary.readonly"
 
 @router.get("/login")
 def login_via_google():
@@ -70,13 +70,18 @@ async def google_callback(code: str, db: Session = Depends(get_db)):
         google_id = user_data.get("id")
         email = user_data.get("email")
         name = user_data.get("name")
+        refresh_token = tokens.get("refresh_token")
         
         user = db.query(models.User).filter(models.User.google_id == google_id).first()
         if not user:
-            user = models.User(google_id=google_id, email=email, name=name)
+            user = models.User(google_id=google_id, email=email, name=name, google_refresh_token=refresh_token)
             db.add(user)
-            db.commit()
-            db.refresh(user)
+        else:
+            if refresh_token:
+                user.google_refresh_token = refresh_token
+        
+        db.commit()
+        db.refresh(user)
             
         # 4. Generate local JWT for the session
         access_token_jwt = create_access_token(data={"sub": str(user.id)})
