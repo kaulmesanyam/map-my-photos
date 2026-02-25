@@ -4,6 +4,7 @@ from sqlalchemy import text
 import models
 from database import engine, get_db
 import auth
+import photos_routes
 
 # Create pgvector extension if it doesn't exist, then create tables
 # We do this directly via SQL text because pgvector must be enabled before the columns are created
@@ -17,6 +18,7 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI(title="AI Memory Search API", version="1.0.0")
 
 app.include_router(auth.router)
+app.include_router(photos_routes.router)
 
 @app.get("/")
 def read_root():
